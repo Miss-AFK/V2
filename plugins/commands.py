@@ -1,10 +1,11 @@
+
 import os, re, json, base64, logging, random, asyncio
 
 from Script import script
 from database.users_chats_db import db
 from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ChatPermissions
 from database.ia_filterdb import Media, get_file_details, unpack_new_file_id
 from info import CHANNELS, ADMINS, AUTH_CHANNEL, LOG_CHANNEL, PICS, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, START_MESSAGE, FORCE_SUB_TEXT, SUPPORT_CHAT
 from utils import get_settings, get_size, is_subscribed, save_group_settings, temp
@@ -35,11 +36,11 @@ async def start(client, message):
         buttons = [[
             InlineKeyboardButton("➕️ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Cʜᴀᴛ ➕", url=f"http://t.me/{temp.U_NAME}?startgroup=true")
             ],[
-            InlineKeyboardButton("Sᴇᴀʀᴄʜ 🔎", switch_inline_query_current_chat=''), 
-            InlineKeyboardButton("Cʜᴀɴɴᴇʟ 🔈", url="https://t.me/mkn_bots_updates")
+            InlineKeyboardButton("⭕ Search", switch_inline_query_current_chat=''), 
+            InlineKeyboardButton("🔔 Updates", url="https://t.me/FilmZone_Official")
             ],[      
-            InlineKeyboardButton("Hᴇʟᴩ 🕸️", callback_data="help"),
-            InlineKeyboardButton("Aʙᴏᴜᴛ ✨", callback_data="about")
+            InlineKeyboardButton("🌸 Help", callback_data="help"),
+            InlineKeyboardButton("☘️ About", callback_data="about")
         ]]
         m = await message.reply_sticker("CAACAgUAAxkBAAEBvlVk7YKnYxIHVnKW2PUwoibIR2ygGAACBAADwSQxMYnlHW4Ls8gQHgQ") 
         await asyncio.sleep(2)
@@ -71,11 +72,11 @@ async def start(client, message):
         buttons = [[
             InlineKeyboardButton("➕️ Aᴅᴅ Mᴇ Tᴏ Yᴏᴜʀ Cʜᴀᴛ ➕", url=f"http://t.me/{temp.U_NAME}?startgroup=true")
             ],[
-            InlineKeyboardButton("Sᴇᴀʀᴄʜ 🔎", switch_inline_query_current_chat=''), 
-            InlineKeyboardButton("Cʜᴀɴɴᴇʟ 🔈", url="https://t.me/mkn_bots_updates")
+            InlineKeyboardButton("⭕ Search", switch_inline_query_current_chat=''), 
+            InlineKeyboardButton("🔔 Updates", url="https://t.me/FilmZone_Official")
             ],[      
-            InlineKeyboardButton("Hᴇʟᴩ 🕸️", callback_data="help"),
-            InlineKeyboardButton("Aʙᴏᴜᴛ ✨", callback_data="about")
+            InlineKeyboardButton("🌸 Help", callback_data="help"),
+            InlineKeyboardButton("☘️ About", callback_data="about")
         ]]
         m = await message.reply_sticker("CAACAgUAAxkBAAEBvlVk7YKnYxIHVnKW2PUwoibIR2ygGAACBAADwSQxMYnlHW4Ls8gQHgQ")
         await asyncio.sleep(2)
@@ -172,6 +173,7 @@ async def start(client, message):
         return await sts.delete()
         
 
+    
     files_ = await get_file_details(file_id)           
     if not files_:
         pre, file_id = ((base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))).decode("ascii")).split("_", 1)
@@ -183,12 +185,14 @@ async def start(client, message):
             size=get_size(file.file_size)
             f_caption = f"<code>{title}</code>"
             if CUSTOM_FILE_CAPTION:
-                try: f_caption=CUSTOM_FILE_CAPTION.format(mention=message.from_user.mention, file_name= '' if title is None else title, file_size='' if size is None else size, file_caption='')
+                try: f_caption=CUSTOM_FILE_CAPTION.format(mention=message.from_user.mention, file_name= '' if title is None else title, file_size='' if size is None else size, file_caption='' if f_caption is None else f_caption)
                 except: return
             return await msg.edit_caption(f_caption)
+            k = await client.send_message(chat_id = message.from_user.id, text=f"<b>TʜᴀɴᴋYᴏᴜ Fᴏʀ Uꜱɪɴɢ FɪʟᴍZᴏɴᴇ Bᴏᴛꜱ ❤</b>")
+            await asyncio.sleep(600)
+            await msg.delete()
         except: pass
-        return await message.reply('NO SUCH FILE EXIST...')
-        
+        return await message.reply('NO SUCH FILE EXIST...')   
     files = files_[0]
     title = files.file_name
     size=get_size(files.file_size)
@@ -201,8 +205,17 @@ async def start(client, message):
             f_caption=f_caption
     if f_caption is None:
         f_caption = f"{files.file_name}"
-    await client.send_cached_media(chat_id=message.from_user.id, file_id=file_id, caption=f_caption, protect_content=True if pre == 'filep' else False,)
-                    
+    await client.send_cached_media(
+        chat_id=message.from_user.id, 
+        file_id=file_id,
+        caption=f_caption,
+        reply_markup=InlineKeyboardMarkup( [ [ InlineKeyboardButton('▫️ Uᴘᴅᴀᴛᴇ Cʜᴀɴɴᴇʟ ▫️', url=f'https://t.me/FilmZone_Official') ] ] ),
+        protect_content=True if pre == 'filep' else False,
+        )   
+    k = await client.send_message(chat_id = message.from_user.id, text=f"<b>TʜᴀɴᴋYᴏᴜ Fᴏʀ Uꜱɪɴɢ FɪʟᴍZᴏɴᴇ Bᴏᴛꜱ ❤</b>") 
+    await asyncio.sleep(600)
+    await msg.delete()
+                        
 
 
 @Client.on_message(filters.command('channel') & filters.user(ADMINS))
@@ -387,6 +400,3 @@ async def geg_template(client, message):
     settings = await get_settings(grp_id)
     template = settings['template']
     await sts.edit(f"Cᴜʀʀᴇɴᴛ Tᴇᴍᴘʟᴀᴛᴇ Fᴏʀ {title} Iꜱ\n\n{template}")
-
-
-
